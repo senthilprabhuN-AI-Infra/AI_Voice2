@@ -563,6 +563,7 @@
 <div id="toast"></div>
 
 <!-- ── JavaScript ──────────────────────────────────── -->
+<script src="config.js"></script>
 <script>
   // ── UTC Clock ────────────────────────────────────────
   function updateClock() {
@@ -619,7 +620,9 @@
   let isRecording = false;
   let audioStream = null;
 
-  const WS_URL = `ws://${window.location.host}/ws/audio`;
+  // Backend may live on another host (UI on Vercel, API on Render); http→ws, https→wss
+  const BACKEND_ORIGIN = (window.BACKEND_URL || window.location.origin).replace(/\/+$/, '');
+  const WS_URL = BACKEND_ORIGIN.replace(/^http/, 'ws') + '/ws/audio';
 
   // ── Show/hide button states ───────────────────────────
   function setVoiceUI(state) {

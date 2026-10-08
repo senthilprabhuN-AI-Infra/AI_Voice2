@@ -85,6 +85,10 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 async def serve_ui():
     return FileResponse(os.path.join(static_dir, "index.html"))
 
+@app.get("/config.js")
+async def serve_config():
+    return FileResponse(os.path.join(static_dir, "config.js"), media_type="application/javascript")
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "aviation-asr-voice-portal"}
@@ -187,6 +191,8 @@ async def handle_audio_stream(websocket: WebSocket):
     if not transcript.strip():
         try:
             await websocket.send_json({"event": "no_speech_detected"})
+            # Close so the UI's onclose fires and the user can record again
+            await websocket.close()
         except Exception:
             pass
         session_manager.terminate_session(session.session_id)
@@ -247,4 +253,4 @@ async def handle_audio_stream(websocket: WebSocket):
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("app:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")), reload=False)
