@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Air Safety Report Form (ASR) — QM Smart Technologies</title>
+  <meta name="description" content="QM Smart Technologies Air Safety Report Form with real-time AI voice-to-form filling." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-bg:     #1e4a5c;
+      --sidebar-hover:  #2a6070;
+      --sidebar-active: #155068;
+      --header-bg:      #1e4a5c;
+      --accent:         #3a9bbf;
+      --accent-light:   #4db8e0;
+      --section-hdr:    linear-gradient(90deg, #d0e8f0 0%, #e8f4f8 100%);
+      --section-border: #8ab8cc;
+      --body-bg:        #f0f4f6;
+      --card-bg:        #ffffff;
+      --text-primary:   #1a2d35;
+      --text-muted:     #6b8a96;
+      --input-border:   #c5d8e0;
+      --input-focus:    #3a9bbf;
+      --success:        #28a745;
+      --danger:         #dc3545;
+      --filled-glow:    #28a745;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--body-bg); color: var(--text-primary); }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .layout { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    .sidebar {
+      width: 220px; min-width: 220px;
+      background: var(--sidebar-bg);
+      display: flex; flex-direction: column;
+      overflow-y: auto; z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-logo .logo-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #4db8e0, #1a7a9e);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: white; flex-shrink: 0;
+    }
+    .sidebar-logo .logo-text { color: white; font-size: 11px; font-weight: 600; line-height: 1.3; }
+    .sidebar-logo .logo-text span { display: block; color: rgba(255,255,255,0.6); font-weight: 400; font-size: 10px; }
+
+    .nav-section { flex: 1; padding: 8px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; color: rgba(255,255,255,0.82);
+      font-size: 12.5px; font-weight: 500; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: var(--sidebar-hover); color: white; }
+    .nav-item.active { background: var(--sidebar-active); color: white; border-left-color: var(--accent-light); }
+    .nav-item .nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+    .nav-item .nav-arrow { margin-left: auto; font-size: 10px; opacity: 0.6; }
+
+    .sidebar-user {
+      padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #4db8e0, #1a7a9e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-info .user-name { color: white; font-size: 12px; font-weight: 600; }
+    .user-info .user-role { color: rgba(255,255,255,0.5); font-size: 10px; }
+    .sidebar-logout {
+      padding: 8px 16px 14px;
+      color: #ff7070; font-size: 12.5px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+    }
+    .sidebar-logout:hover { color: #ff4444; }
+
+    /* ── Main Content ─────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Header ───────────────────────────────────────── */
+    .header {
+      height: 52px; background: var(--header-bg);
+      display: flex; align-items: center; padding: 0 20px;
+      gap: 12px; flex-shrink: 0; z-index: 50;
+    }
+    .header-menu-btn { color: white; font-size: 18px; cursor: pointer; opacity: 0.8; }
+    .header-clock {
+      color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 500;
+      background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 4px;
+    }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .version-badge {
+      background: rgba(255,255,255,0.12); color: white;
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 4px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2);
+    }
+    .hdr-btn {
+      width: 34px; height: 34px; border-radius: 6px;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; cursor: pointer; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s; position: relative;
+    }
+    .hdr-btn:hover { background: rgba(255,255,255,0.2); }
+    .hdr-btn .badge {
+      position: absolute; top: -4px; right: -4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #e8404a; color: white; font-size: 9px;
+      font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .hdr-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, #4db8e0, #1a7a9e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: white; cursor: pointer;
+    }
+
+    /* ── Breadcrumb ───────────────────────────────────── */
+    .breadcrumb-bar {
+      background: white; padding: 10px 24px;
+      border-bottom: 1px solid #dde8ed;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--text-muted);
+    }
+    .breadcrumb-bar a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .breadcrumb-bar a:hover { text-decoration: underline; }
+    .breadcrumb-bar .sep { color: #bbb; }
+    .breadcrumb-bar .current { color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+
+    /* ── Page Body ────────────────────────────────────── */
+    .page-body { flex: 1; overflow-y: auto; padding: 16px 24px 40px; position: relative; }
+
+    /* ── Voice Status Banner ──────────────────────────── */
+    #voice-banner {
+      display: none;
+      background: linear-gradient(90deg, #1e4a5c, #2d7a9a);
+      color: white; border-radius: 8px;
+      padding: 10px 18px; margin-bottom: 14px;
+      align-items: center; gap: 12px;
+      animation: slideDown 0.3s ease;
+    }
+    #voice-banner.show { display: flex; }
+    #voice-banner .pulse-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #ff4d4d; flex-shrink: 0;
+      animation: pulse-red 1s ease-in-out infinite;
+    }
+    #voice-banner.thinking .pulse-dot { background: #ffd700; animation: pulse-gold 1s ease-in-out infinite; }
+    #voice-banner.done .pulse-dot { background: #28a745; animation: none; }
+    #voice-banner .banner-text { font-size: 13px; font-weight: 500; flex: 1; }
+    #voice-banner .banner-transcript {
+      font-size: 11px; opacity: 0.8; font-style: italic;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;
+    }
+    @keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(255,77,77,0.4)} 50%{box-shadow:0 0 0 6px rgba(255,77,77,0)} }
+    @keyframes pulse-gold { 0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,0.4)} 50%{box-shadow:0 0 0 6px rgba(255,215,0,0)} }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Form Card ────────────────────────────────────── */
+    .form-card {
+      background: white; border-radius: 8px;
+      border: 1px solid #dde8ed;
+      overflow: hidden; margin-bottom: 14px;
+    }
+
+    /* ── Section Header ───────────────────────────────── */
+    .section-header {
+      background: var(--section-hdr);
+      border-bottom: 1px solid var(--section-border);
+      padding: 10px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+    }
+    .section-header .sec-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12.5px; font-weight: 700;
+      color: var(--text-primary); letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .section-header .sec-title .sec-icon { font-size: 14px; }
+    .section-toggle { color: var(--text-muted); font-size: 16px; transition: transform 0.2s; }
+    .section-toggle.collapsed { transform: rotate(180deg); }
+
+    /* ── Form Grid ────────────────────────────────────── */
+    .section-body { padding: 16px 18px 8px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 20px; }
+    .form-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .form-grid.cols-1 { grid-template-columns: 1fr; }
+
+    /* ── Form Group ───────────────────────────────────── */
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.span-2 { grid-column: span 2; }
+    .form-group.span-3 { grid-column: span 3; }
+    .form-label {
+      font-size: 12px; font-weight: 600; color: var(--text-primary);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .form-label .req { color: var(--danger); font-size: 13px; }
+    .form-label .info-icon { color: var(--accent); font-size: 11px; cursor: help; }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%; border: 1px solid var(--input-border);
+      border-radius: 5px; padding: 8px 11px;
+      font-size: 12.5px; font-family: 'Inter', sans-serif;
+      color: var(--text-primary); background: #fafcfd;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+    }
+    .form-input::placeholder, .form-select option:first-child, .form-textarea::placeholder {
+      color: #aac0ca;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(58,155,191,0.12);
+      background: white;
+    }
+    .form-textarea { resize: vertical; min-height: 90px; }
+
+    /* ── Voice-Filled Glow Animation ─────────────────── */
+    .voice-filled {
+      animation: voiceFill 1.5s ease forwards;
+    }
+    @keyframes voiceFill {
+      0%   { border-color: var(--filled-glow); box-shadow: 0 0 0 3px rgba(40,167,69,0.25); background: #f0fff4; }
+      70%  { border-color: var(--filled-glow); box-shadow: 0 0 0 3px rgba(40,167,69,0.12); background: #f7fff9; }
+      100% { border-color: var(--input-border); box-shadow: none; background: #fafcfd; }
+    }
+
+    /* ── Radio Group ──────────────────────────────────── */
+    .radio-group { display: flex; gap: 20px; align-items: center; padding-top: 4px; }
+    .radio-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .radio-label input[type="radio"] { accent-color: var(--accent); width: 14px; height: 14px; }
+
+    /* ── Voice Autofill Button (idle state) ─────────────── */
+    #voice-autofill-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 6px;
+      background: #fff; border: 1.5px solid #3a9bbf;
+      color: #1e4a5c; font-size: 12px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.15s, box-shadow 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    #voice-autofill-btn:hover { background: #eef7fb; box-shadow: 0 2px 8px rgba(58,155,191,0.18); }
+    #voice-autofill-btn .va-icon { font-size: 14px; }
+
+    /* ── Recording Controls (mic + stop) ─────────────────── */
+    #voice-recording-controls {
+      display: none; align-items: center; gap: 8px;
+    }
+    #voice-recording-controls.show { display: flex; }
+
+    /* Pulsing mic indicator */
+    #mic-live-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 14px; border-radius: 6px;
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      border: none; color: white; font-size: 12px; font-weight: 600;
+      cursor: default; font-family: 'Inter', sans-serif;
+      animation: mic-pulse-border 1.2s ease-in-out infinite;
+    }
+    #mic-live-btn .pulse-ring {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: white; flex-shrink: 0;
+      animation: pulse-white 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse-white {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+      50%      { box-shadow: 0 0 0 5px rgba(255,255,255,0); }
+    }
+    @keyframes mic-pulse-border {
+      0%,100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.3); }
+      50%      { box-shadow: 0 0 0 5px rgba(220,53,69,0); }
+    }
+
+    /* Stop button */
+    #stop-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 6px;
+      background: #fff; border: 1.5px solid #dc3545;
+      color: #dc3545; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    #stop-btn:hover { background: #fff0f1; box-shadow: 0 2px 8px rgba(220,53,69,0.2); }
+    #stop-btn .stop-square {
+      width: 9px; height: 9px; border-radius: 2px;
+      background: #dc3545; flex-shrink: 0;
+    }
+
+    /* ── Toast ────────────────────────────────────────── */
+    #toast {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      background: #1e4a5c; color: white; border-radius: 8px;
+      padding: 12px 18px; font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      display: none; align-items: center; gap: 10px;
+      animation: slideDown 0.3s ease;
+      max-width: 360px;
+    }
+    #toast.show { display: flex; }
+    #toast.success { background: #155724; }
+    #toast.error   { background: #721c24; }
+
+    /* ── Scrollbar ────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #e8f0f3; }
+    ::-webkit-scrollbar-thumb { background: #aac5d0; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-circle">QM</div>
+      <div class="logo-text">QM SMART<span>TECHNOLOGIES</span></div>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-item"><span class="nav-icon">🏠</span> Home</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> Administration <span class="nav-arrow">›</span></div>
+      <div class="nav-item active"><span class="nav-icon">📋</span> Audit Management <span class="nav-arrow">›</span></div>
+      <div class="nav-item"><span class="nav-icon">🔒</span> Authorization <span class="nav-arrow">›</span></div>
+      <div class="nav-item"><span class="nav-icon">📊</span> Dashboards <span class="nav-arrow">›</span></div>
+      <div class="nav-item"><span class="nav-icon">📁</span> DDS <span class="nav-arrow">›</span></div>
+      <div class="nav-item"><span class="nav-icon">✅</span> Dynamic Task Mgmt <span class="nav-arrow">›</span></div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name">presentation</div>
+        <div class="user-role">admin · test@qmsmart.net</div>
+      </div>
+    </div>
+    <div class="sidebar-logout">⬅ Logout</div>
+  </aside>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════ -->
+  <div class="main">
+
+    <!-- Header -->
+    <header class="header">
+      <span class="header-menu-btn">☰</span>
+      <span class="header-clock" id="utc-clock">UTC Time: --</span>
+      <div class="header-right">
+        <span class="version-badge">v1.14.c ▾</span>
+        <button class="hdr-btn" title="My Tasks">📋</button>
+        <button class="hdr-btn" title="Notifications">
+          🔔<span class="badge">10</span>
+        </button>
+        <button class="hdr-btn" title="Help">❓</button>
+        <div class="hdr-avatar">A</div>
+      </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+      <span>🏠</span>
+      <a href="#">Dashboard</a>
+      <span class="sep">›</span>
+      <span>📁</span>
+      <span class="current">✈️ Air Safety Report Form (ASR)</span>
+      <span style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <!-- Idle: Use Voice Autofill button -->
+        <button id="voice-autofill-btn" onclick="startRecordingFlow()" title="Click to start voice recording">
+          <span class="va-icon">🎙</span> Use Voice Autofill
+        </button>
+        <!-- Active: Mic live indicator + Stop button -->
+        <div id="voice-recording-controls">
+          <div id="mic-live-btn">
+            <span class="pulse-ring"></span> Recording...
+          </div>
+          <button id="stop-btn" onclick="stopRecordingFlow()" title="Stop recording and process">
+            <span class="stop-square"></span> Stop & Process
+          </button>
+        </div>
+      </span>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+      <!-- Voice Banner -->
+      <div id="voice-banner">
+        <div class="pulse-dot"></div>
+        <div class="banner-text" id="banner-text">🎙️ Listening — speak your incident narrative...</div>
+        <div class="banner-transcript" id="banner-transcript"></div>
+      </div>
+
+      <!-- ═══ SECTION 1: OCCURRENCE DETAILS ═══ -->
+      <div class="form-card">
+        <div class="section-header" onclick="toggleSection(this)">
+          <div class="sec-title"><span class="sec-icon">⚙️</span> OCCURRENCE DETAILS</div>
+          <span class="section-toggle">⌃</span>
+        </div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Occurrence Title <span class="req">*</span></label>
+              <input id="f_occurrence_title" class="form-input" type="text" placeholder="Occurrence Title" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Occurrence <span class="req">*</span></label>
+              <input id="f_date_of_occurrence" class="form-input" type="text" placeholder="dd-mm-yyyy" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time of Occurrence (UTC) <span class="req">*</span></label>
+              <input id="f_time_of_occurrence_utc" class="form-input" type="text" placeholder="Enter Time of Occurrence (UTC)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Place of Occurrence <span class="info-icon">ℹ</span> <span class="req">*</span></label>
+              <input id="f_place_of_occurrence" class="form-input" type="text" placeholder="Enter Place of Occurrence" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Origin <span class="info-icon">ℹ</span> <span class="req">*</span></label>
+              <input id="f_origin" class="form-input" type="text" placeholder="Enter Origin" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Destination <span class="info-icon">ℹ</span> <span class="req">*</span></label>
+              <input id="f_destination" class="form-input" type="text" placeholder="Enter Destination" />
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Department <span class="req">*</span></label>
+              <input id="f_department" class="form-input" type="text" placeholder="Department" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SECTION 2: AIRCRAFT AND FLIGHT INFORMATION ═══ -->
+      <div class="form-card">
+        <div class="section-header" onclick="toggleSection(this)">
+          <div class="sec-title"><span class="sec-icon">✈️</span> AIRCRAFT AND FLIGHT INFORMATION</div>
+          <span class="section-toggle">⌃</span>
+        </div>
+        <div class="section-body">
+          <div class="form-grid cols-3">
+            <div class="form-group">
+              <label class="form-label">Aircraft Registration <span class="info-icon">ℹ</span> <span class="req">*</span></label>
+              <input id="f_aircraft_registration" class="form-input" type="text" placeholder="Aircraft Registration" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aircraft Type <span class="info-icon">ℹ</span></label>
+              <input id="f_aircraft_type" class="form-input" type="text" placeholder="Enter Aircraft Type" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aircraft Manufacturer <span class="info-icon">ℹ</span></label>
+              <input id="f_aircraft_manufacturer" class="form-input" type="text" placeholder="Enter Aircraft Manufacturer" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">SQUAWK</label>
+              <input id="f_squawk" class="form-input" type="text" placeholder="Enter SQUAWK" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Altitude/FL</label>
+              <input id="f_altitude_fl" class="form-input" type="text" placeholder="Enter Altitude/FL" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aircraft speed (kts)</label>
+              <input id="f_aircraft_speed_kts" class="form-input" type="text" placeholder="Enter Aircraft speed (kts)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aircraft T/O Weight</label>
+              <input id="f_aircraft_to_weight" class="form-input" type="text" placeholder="Enter Aircraft T/O Weight" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Landed at</label>
+              <input id="f_landed_at" class="form-input" type="text" placeholder="Enter Landed at" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Flight Phase</label>
+              <input id="f_flight_phase" class="form-input" type="text" placeholder="e.g. Takeoff, Cruise, Landing" />
+            </div>
+            <div class="form-group span-3">
+              <label class="form-label">Flight Rules</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="flight_rules" id="f_flight_rules_ifr" value="IFR" /> IFR
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="flight_rules" id="f_flight_rules_vfr" value="VFR" /> VFR
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SECTION 3: ENVIRONMENT ═══ -->
+      <div class="form-card">
+        <div class="section-header" onclick="toggleSection(this)">
+          <div class="sec-title"><span class="sec-icon">🌤️</span> ENVIRONMENT</div>
+          <span class="section-toggle">⌃</span>
+        </div>
+        <div class="section-body">
+          <div class="form-grid cols-3">
+            <div class="form-group">
+              <label class="form-label">Wind</label>
+              <input id="f_wind" class="form-input" type="text" placeholder="e.g. 270/15 kts" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cloud Base</label>
+              <input id="f_cloud_base" class="form-input" type="text" placeholder="e.g. 2500ft, Overcast" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Runway</label>
+              <input id="f_runway" class="form-input" type="text" placeholder="e.g. RWY 28L" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SECTION 4: CONSEQUENCES AND OCCURRENCE DESCRIPTION ═══ -->
+      <div class="form-card">
+        <div class="section-header" onclick="toggleSection(this)">
+          <div class="sec-title"><span class="sec-icon">📋</span> CONSEQUENCES AND OCCURRENCE DESCRIPTION</div>
+          <span class="section-toggle">⌃</span>
+        </div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Consequences <span class="req">*</span></label>
+              <input id="f_consequences" class="form-input" type="text" placeholder="e.g. None, Minor Injury, Aircraft Damage" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Configuration at Event <span class="req">*</span></label>
+              <input id="f_configuration_at_event" class="form-input" type="text" placeholder="Configuration at Event" />
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Occurrence Description <span class="req">*</span></label>
+              <textarea id="f_occurrence_description" class="form-textarea" placeholder="Enter Occurrence Description" rows="5"></textarea>
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Any immediate action taken? <span class="req">*</span></label>
+              <textarea id="f_immediate_action_taken" class="form-textarea" placeholder="Enter Any immediate action taken?" rows="4"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+
+
+<!-- ── Toast ───────────────────────────────────────── -->
+<div id="toast"></div>
+
+<!-- ── JavaScript ──────────────────────────────────── -->
+<script>
+  // ── UTC Clock ────────────────────────────────────────
+  function updateClock() {
+    const now = new Date();
+    const d = now.toUTCString().replace(' GMT', '');
+    document.getElementById('utc-clock').textContent = 'UTC Time: ' + now.toISOString().replace('T', ' ').slice(0, 19);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── Section Toggle ───────────────────────────────────
+  function toggleSection(headerEl) {
+    const body = headerEl.nextElementSibling;
+    const arrow = headerEl.querySelector('.section-toggle');
+    if (body.style.display === 'none') {
+      body.style.display = '';
+      arrow.classList.remove('collapsed');
+    } else {
+      body.style.display = 'none';
+      arrow.classList.add('collapsed');
+    }
+  }
+
+  // ── Toast ────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 4000);
+  }
+
+  // ── Voice Fill ───────────────────────────────────────
+  function fillField(fieldId, value) {
+    if (!value || value === 'null') return;
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+
+    // Handle radio buttons (flight_rules)
+    if (fieldId === 'f_flight_rules') {
+      const radio = document.querySelector(`input[name="flight_rules"][value="${value.toUpperCase()}"]`);
+      if (radio) radio.checked = true;
+      return;
+    }
+    el.value = value;
+    el.classList.remove('voice-filled');
+    void el.offsetWidth; // reflow to restart animation
+    el.classList.add('voice-filled');
+  }
+
+  // ── WebSocket + Mic Recording ────────────────────────
+  let ws = null;
+  let isRecording = false;
+  let audioStream = null;
+
+  const WS_URL = `ws://${window.location.host}/ws/audio`;
+
+  // ── Show/hide button states ───────────────────────────
+  function setVoiceUI(state) {
+    const autofillBtn = document.getElementById('voice-autofill-btn');
+    const recordingControls = document.getElementById('voice-recording-controls');
+    if (state === 'recording') {
+      autofillBtn.style.display = 'none';
+      recordingControls.classList.add('show');
+    } else {
+      autofillBtn.style.display = '';
+      recordingControls.classList.remove('show');
+    }
+  }
+
+  async function startRecordingFlow() {
+    if (ws && ws.readyState <= WebSocket.OPEN) {
+      console.warn('⚠️ Session already active — ignoring duplicate start');
+      return;
+    }
+
+    try {
+      audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true }
+      });
+    } catch (err) {
+      showToast('❌ Microphone access denied: ' + err.message, 'error');
+      return;
+    }
+
+    // Connect WebSocket
+    ws = new WebSocket(WS_URL);
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = () => {
+      console.log('✅ WebSocket connected');
+      startAudioCapture();
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        handleServerEvent(data);
+      } catch (e) { console.warn('Non-JSON WS message', event.data); }
+    };
+
+    ws.onerror = () => {
+      showToast('❌ WebSocket error — is the server running?', 'error');
+      stopRecordingFlow();
+    };
+
+    ws.onclose = () => {
+      console.log('🔌 WebSocket closed');
+      // If still marked recording (unexpected close), reset UI
+      if (isRecording) stopRecordingFlow();
+    };
+  }
+
+  function startAudioCapture() {
+    isRecording = true;
+    setVoiceUI('recording');
+    setBanner('listening', '🎙️ Listening — speak your incident narrative...');
+
+    // Use AudioContext to resample to 16 kHz PCM Int16
+    const audioCtx = new AudioContext({ sampleRate: 16000 });
+    const source = audioCtx.createMediaStreamSource(audioStream);
+    const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+
+    processor.onaudioprocess = (e) => {
+      if (!isRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
+      const float32 = e.inputBuffer.getChannelData(0);
+      const int16 = new Int16Array(float32.length);
+      for (let i = 0; i < float32.length; i++) {
+        int16[i] = Math.max(-32768, Math.min(32767, Math.round(float32[i] * 32767)));
+      }
+      ws.send(int16.buffer);
+    };
+
+    source.connect(processor);
+    processor.connect(audioCtx.destination);
+    window._audioCtx = audioCtx;
+    window._processor = processor;
+  }
+
+  function stopRecordingFlow() {
+    isRecording = false;
+    setVoiceUI('idle');
+
+    // Tear down audio pipeline
+    if (window._processor) { window._processor.disconnect(); window._processor = null; }
+    if (window._audioCtx)  { window._audioCtx.close();       window._audioCtx  = null; }
+    if (audioStream)       { audioStream.getTracks().forEach(t => t.stop()); audioStream = null; }
+
+    // Send stop signal to server (keep WS open so server can reply with results)
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      setBanner('thinking', '⏳ Processing speech — extracting form fields...');
+      ws.send(JSON.stringify({ action: 'stop' }));
+    }
+  }
+
+  function handleServerEvent(data) {
+    switch (data.event) {
+      case 'listening_started':
+        console.log('Session:', data.session_id);
+        break;
+
+      case 'transcript':
+        setBanner('thinking', '🧠 Analysing transcript with GPT-5.6-sol...');
+        document.getElementById('banner-transcript').textContent = '"' + data.text + '"';
+        break;
+
+      case 'form_filled':
+        fillAllFields(data);
+        setBanner('done', '✅ Form filled successfully!');
+        showToast('✅ Voice-to-Form complete! All fields populated.', 'success');
+        setTimeout(() => hideBanner(), 4000);
+        break;
+
+      case 'no_speech_detected':
+        hideBanner();
+        showToast('⚠️ No speech detected — please try again.', '');
+        break;
+
+      case 'error':
+        hideBanner();
+        showToast('❌ Error: ' + data.error, 'error');
+        break;
+    }
+  }
+
+  function fillAllFields(data) {
+    // Map server JSON keys → field IDs
+    const fieldMap = {
+      occurrence_title:        'f_occurrence_title',
+      date_of_occurrence:      'f_date_of_occurrence',
+      time_of_occurrence_utc:  'f_time_of_occurrence_utc',
+      place_of_occurrence:     'f_place_of_occurrence',
+      origin:                  'f_origin',
+      destination:             'f_destination',
+      department:              'f_department',
+      aircraft_registration:   'f_aircraft_registration',
+      aircraft_type:           'f_aircraft_type',
+      aircraft_manufacturer:   'f_aircraft_manufacturer',
+      squawk:                  'f_squawk',
+      altitude_fl:             'f_altitude_fl',
+      aircraft_speed_kts:      'f_aircraft_speed_kts',
+      aircraft_to_weight:      'f_aircraft_to_weight',
+      landed_at:               'f_landed_at',
+      flight_phase:            'f_flight_phase',
+      flight_rules:            'f_flight_rules',
+      wind:                    'f_wind',
+      cloud_base:              'f_cloud_base',
+      runway:                  'f_runway',
+      consequences:            'f_consequences',
+      occurrence_description:  'f_occurrence_description',
+      immediate_action_taken:  'f_immediate_action_taken',
+    };
+
+    let filled = 0;
+    for (const [key, fieldId] of Object.entries(fieldMap)) {
+      if (data[key]) {
+        fillField(fieldId, data[key]);
+        filled++;
+      }
+    }
+    console.log(`✅ Filled ${filled} fields from voice input.`);
+  }
+
+  // ── Banner Helpers ───────────────────────────────────
+  function setBanner(state, text) {
+    const b = document.getElementById('voice-banner');
+    b.className = 'show ' + state;
+    document.getElementById('banner-text').textContent = text;
+  }
+  function hideBanner() {
+    document.getElementById('voice-banner').className = '';
+    document.getElementById('banner-transcript').textContent = '';
+  }
+</script>
+</body>
+</html>

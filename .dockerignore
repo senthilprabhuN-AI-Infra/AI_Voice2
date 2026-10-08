@@ -1,0 +1,24 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment secrets — NEVER include in Docker image
+.env
+
+# Development / IDE files
+*.drawio
+*.md
+.vscode/
+.agents/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
